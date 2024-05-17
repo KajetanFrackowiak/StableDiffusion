@@ -71,3 +71,20 @@ class VAE_Encoder(nn.Sequential):
         # (batch_size, 8, heigth, height / 8, width / 8) -> two tensors of shape (batch_size, 4, height, 4, height / 8, width / 8)
         mean, log_variance = torch.chunk(x, 2, dim=1)
         
+        # (batch_size, 4, height / 8, width / 8) -> (batch_size, 4, height / 8, width / 8)
+        log_variance = torch.clamp(log_variance, -30, 20) 
+
+        # (batch_size, 4, height / 8, width / 8) -> (batch_size, 4, height / 8, width / 8)
+        variance = log_variance.exp()
+
+        # (batch_size, 4, height / 8, width / 8) -> (batch_size, 4, height / 8, width / 8)
+        stdev = variance.sqrt()
+        
+        # Z = N(0, 1) -> N(mean, variace) = X
+        # X = mean + stdev * Z
+        x = mean + stdev * noise
+        
+        # Scale the output by a constant
+        x *= 0.18215
+        
+        return 0
